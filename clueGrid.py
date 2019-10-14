@@ -46,7 +46,7 @@ class clueGrid:
             self.grid[cardIndex][playerIndex] = 0
     
     def readGuessLog(self):
-        with open("guessLogTest.csv") as csvfile:
+        with open("public/guessLogTest.csv") as csvfile:
             csvReader = csv.reader(csvfile)
             header = True
             for row in csvReader:
@@ -61,8 +61,26 @@ class clueGrid:
         suspect = row[0]
         weapon = row[1]
         room = row[2]
-        
-    
+        suspectIndex = clueUtils.allCards.index(suspect)
+        weaponIndex = clueUtils.allCards.index(weapon)
+        roomIndex = clueUtils.allCards.index(room)
+        playerResponses = []
+        for playerIndex in range(clueUtils.numPlayers):
+            colIndex = playerIndex + 3
+            playerResponse = row[colIndex]
+            playerResponses.append(playerResponse)
+            if playerResponse == "passed":
+                self.grid[suspectIndex][playerIndex] = 0
+                self.grid[weaponIndex][playerIndex] = 0
+                self.grid[roomIndex][playerIndex] = 0
+            elif playerResponse == "showed":
+                if (self.grid[suspectIndex][playerIndex] == 0) and (self.grid[weaponIndex][playerIndex] == 0):
+                    self.grid[roomIndex][playerIndex] = 1
+                elif (self.grid[suspectIndex][playerIndex] == 0) and (self.grid[roomIndex][playerIndex] == 0):
+                    self.grid[weaponIndex][playerIndex] = 1
+                elif (self.grid[weaponIndex][playerIndex] == 0) and (self.grid[roomIndex][playerIndex] == 0):
+                    self.grid[suspectIndex][playerIndex] = 1
+                
     def display(self):
         for i in range(len(self.grid)):
             for j in range(len(self.grid[0])):
@@ -75,4 +93,5 @@ if __name__ == "__main__":
     myTestGrid = clueGrid()
     myTestGrid.display()
     myTestGrid.readGuessLog()
+    myTestGrid.display()
 #   print(clueUtils.numPlayerCards)

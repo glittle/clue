@@ -59,10 +59,10 @@ playerNames = []
 playerTypes = []
 numPlayerCards = []
 
-importListFromCSV("suspects.csv", suspects)
-importListFromCSV("weapons.csv", weapons)
-importListFromCSV("rooms.csv", rooms)
-importTwoListsFromCSV("playerNames.csv", playerNames, playerTypes)
+importListFromCSV("setup/suspects.csv", suspects)
+importListFromCSV("setup/weapons.csv", weapons)
+importListFromCSV("setup/rooms.csv", rooms)
+importTwoListsFromCSV("setup/playerNames.csv", playerNames, playerTypes)
 
 numPlayers = len(playerNames)
 numSuspects = len(suspects)
@@ -86,11 +86,11 @@ while cardIndex < 18:
         playerIndex = playerIndex + 1
 
 #empty guessLog.csv file
-file = open("guessLog.csv", 'w')
+file = open("public/guessLog.csv", 'w')
 file.close()
 
 #write header to guessLog.csv file
 guessLogHeader = ["Suspect", "Weapon", "Room"]
 for playerName in playerNames:
     guessLogHeader.append(playerName)
-appendRowToFile("guessLog.csv", guessLogHeader)
+appendRowToFile("public/guessLog.csv", guessLogHeader)

@@ -30,7 +30,7 @@ class guess:
         guessList = [self.suspect, self.weapon, self.room]
         guessList = guessList + self.results
         print(guessList) #for debugging
-        clueUtils.appendRowToFile("guessLog.csv", guessList)
+        clueUtils.appendRowToFile("public/guessLog.csv", guessList)
         
     def display(self):
         print("%s's guess is %s with the %s in the %s" % (self.player, self.suspect, self.weapon, self.room))
