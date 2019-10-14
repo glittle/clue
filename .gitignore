@@ -102,3 +102,12 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Ignore cards directory
+cards/
+
+# Ignore public directory
+public/
+
+# Ignore private directory
+private/
