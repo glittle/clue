@@ -46,5 +46,17 @@ while cardIndex < 18:
 clueUtils.writeToFile("cards/mystery.csv", solution)
 for i in range(numPlayers):
     clueUtils.writeToFile("cards/%s_cards.csv" % (playerNames[i]), playerCards[i])
+    f = open("private/%s_saw.csv" % (playerNames[i]), 'w')
+    f.close()
+
+#empty guessLog.csv file
+file = open("public/guessLog.csv", 'w')
+file.close()
+
+#write header to guessLog.csv file
+guessLogHeader = ["Suspect", "Weapon", "Room"]
+for playerName in playerNames:
+    guessLogHeader.append(playerName)
+appendRowToFile("public/guessLog.csv", guessLogHeader)
 
 print("Cards written to files")

@@ -11,10 +11,34 @@ class cluePlayer:
         self.playerType = playerType
         self.grid = clueGrid.clueGrid()
         
+        f = open("private/%s_saw.csv" % (self.name), 'a')
+        for card in cards:
+            f.write("\"%s\",\"%s\"\n" % (self.name, card))
+        f.close()
+        
     def display(self):
         print("Name: %s\n" % (self.name))
         print("Type: %s\n" % (self.playerType))
         print("Cards: %s\n" % (self.cards))
+    
+    def revealToHuman(self, theGuess):
+        print("%s: I, %s, have %s" % (theGuess.name, self.name, theGuess.revealed)) 
+        
+    def revealToRandom(self, theGuess):
+        f = open("private/%s_saw.csv" % (theGuess.playerName), 'a')
+        f.write("\"%s\",\"%s\"\n" % (self.name, theGuess.revealed))
+        f.close()
+    
+    def reveal(self, theGuess):
+        playerIndex = clueUtils.playerNames.index(theGuess.playerName)
+        playerType = clueUtils.playerTypes[playerIndex]
+        if playerType == "human":
+            self.revealToHuman(theGuess)
+        elif playerType == "random":
+            self.revealToRandom(theGuess)
+        else:
+            print("Unrecognized player type %s.  Revealing as if random." % (playerType))
+            self.revealToRandom(theGuess)
     
     def humanCheckHand(self, theGuess):
         theGuessedCards = theGuess.cardList() 
@@ -36,6 +60,7 @@ class cluePlayer:
                 theGuess.revealed = theGuessedCards[1]
             if userInput == "r":
                 theGuess.revealed = theGuessedCards[2]
+            self.reveal(theGuess)
             return theGuess
         if userInput == "p":
             theGuess.inputResult(self.name, "passed")
@@ -48,7 +73,8 @@ class cluePlayer:
                 if candidate == card:
                     theGuess.inputResult(self.name, "showed")
                     theGuess.revealed = candidate
-                    print("%s: I have %s" % (self.name, card))
+                    print("%s: Show" % (self.name))
+                    self.reveal(theGuess)
                     return theGuess
             
         theGuess.inputResult(self.name, "passed")
@@ -86,3 +112,22 @@ class cluePlayer:
             return theGuess
         print("Invalid player type")
         
+#Test code
+if __name__ == "__main__":
+    cluePlayers = []
+
+    for playerIndex in range(clueUtils.numPlayers):
+        playerCards = []
+        if clueUtils.playerTypes[playerIndex] != "human":
+            clueUtils.importListFromCSV("cards/%s_cards.csv" % (clueUtils.playerNames[playerIndex]), playerCards)
+        player = cluePlayer(clueUtils.playerNames[playerIndex], playerCards, clueUtils.playerTypes[playerIndex])
+        cluePlayers.append(player)
+    
+    testPlayer = cluePlayers[0]
+    print("Initial Grid")
+    testPlayer.grid.displayPretty()
+    testPlayer.grid.readGuessLog()
+    testPlayer.grid.readPrivateLog("private/%s_saw.csv" % (testPlayer.name))
+    testPlayer.grid.updateCardProbabilities()
+    print("Final Grid")
+    testPlayer.grid.displayPretty()

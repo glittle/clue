@@ -2,14 +2,14 @@ import clueUtils
 
 class guess:
     
-    def __init__(self, player, suspect, weapon, room):
-        self.player = player
+    def __init__(self, playerName, suspect, weapon, room):
+        self.playerName = playerName
         self.suspect = suspect
         self.weapon = weapon
         self.room = room
         self.results = []
         self.revealed = "null"
-        playerIndex = clueUtils.playerNames.index(player)
+        playerIndex = clueUtils.playerNames.index(playerName)
         for i in range(clueUtils.numPlayers):
             if i == playerIndex:
                 self.results.append("guessed")
@@ -20,10 +20,10 @@ class guess:
     def fromFile(cls, filename) -> 'guess':
         guessList = []
         importListFromCSV(filename, guessList)
-        return cls(player=guessList[0], suspect=guessList[1], weapon=guessList[2], room=guessList[3])
+        return cls(playerName=guessList[0], suspect=guessList[1], weapon=guessList[2], room=guessList[3])
     
     def save(self, filename):
-        guessList = [self.player, self.suspect, self.weapon, self.room]
+        guessList = [self.playerName, self.suspect, self.weapon, self.room]
         writeToFile(filename, guessList)
         
     def appendToGuessLog(self):
@@ -33,7 +33,7 @@ class guess:
         clueUtils.appendRowToFile("public/guessLog.csv", guessList)
         
     def display(self):
-        print("%s's guess is %s with the %s in the %s" % (self.player, self.suspect, self.weapon, self.room))
+        print("%s's guess is %s with the %s in the %s" % (self.playerName, self.suspect, self.weapon, self.room))
     
     def cardList(self):
         list_of_guessed_cards = [self.suspect, self.weapon, self.room]
@@ -47,10 +47,10 @@ class guess:
     
     def input(self, playerName):
         #print("Enter player: ", end='')
-        self.player = playerName
-        while clueUtils.isPlayer(self.player) != True:
+        self.playerName = playerName
+        while clueUtils.isPlayer(self.playerName) != True:
             print("Sorry, that is not a valid player.  Try again: ", end='')
-            self.player = input()
+            self.playerName = input()
         print("Enter suspect: ", end='')
         self.suspect = input()
         while clueUtils.isSuspect(self.suspect) != True:
@@ -66,4 +66,4 @@ class guess:
         while clueUtils.isRoom(self.room) != True:
             print("Sorry, that is not a valid room.  Try again: ", end='')
             self.room = input()
-        print("%s's guess is %s with the %s in the %s" % (self.player, self.suspect, self.weapon, self.room))
+        print("%s's guess is %s with the %s in the %s" % (self.playerName, self.suspect, self.weapon, self.room))

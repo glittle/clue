@@ -3,16 +3,16 @@ import csv
 import clueUtils
 import guess
 
+numPlayers = clueUtils.numPlayers
+numSuspects = clueUtils.numSuspects
+numWeapons = clueUtils.numWeapons
+numRooms = clueUtils.numRooms
+numCards = clueUtils.numCards
+numPlayerCards = clueUtils.numPlayerCards
+
 class clueGrid:
     def __init__(self):
         self.grid = []
-        
-        numPlayers = clueUtils.numPlayers
-        numSuspects = clueUtils.numSuspects
-        numWeapons = clueUtils.numWeapons
-        numRooms = clueUtils.numRooms
-        numCards = clueUtils.numCards
-        numPlayerCards = clueUtils.numPlayerCards
         
         for i in range(numSuspects):
             suspectRow = []
@@ -46,7 +46,7 @@ class clueGrid:
             self.grid[cardIndex][playerIndex] = 0
     
     def readGuessLog(self):
-        with open("public/guessLogTest.csv") as csvfile:
+        with open("public/guessLog.csv") as csvfile:
             csvReader = csv.reader(csvfile)
             header = True
             for row in csvReader:
@@ -56,7 +56,21 @@ class clueGrid:
                 else:
                     print(row)
                     self.processGuessLogRow(row)
-                    
+    
+    def readPrivateLog(self, filename):
+        with open(filename) as csvfile:
+            csvReader = csv.reader(csvfile)
+            for row in csvReader:
+                self.processPrivateLogRow(row)
+                
+    def processPrivateLogRow(self, row):
+        playerName = row[0]
+        card = row[1]
+        playerIndex = clueUtils.playerNames.index(playerName)
+        cardIndex = clueUtils.allCards.index(card)
+        self.grid[cardIndex][playerIndex] = 1
+        self.updateCardProbability(cardIndex)
+
     def processGuessLogRow(self, row):
         suspect = row[0]
         weapon = row[1]
@@ -80,18 +94,89 @@ class clueGrid:
                     self.grid[weaponIndex][playerIndex] = 1
                 elif (self.grid[weaponIndex][playerIndex] == 0) and (self.grid[roomIndex][playerIndex] == 0):
                     self.grid[suspectIndex][playerIndex] = 1
-                
+    
+    def updateCardProbability(self, cardIndex):
+        # Return False unless something is changed
+        changedSomething = False
+        
+        # Set all other probabilities to zero if owner is known
+        for playerIndex in range(numPlayers + 1):
+            value = self.grid[cardIndex][playerIndex]
+            if value == 1:
+                for i in range(numPlayers + 1):
+                    if (i != playerIndex) and (self.grid[cardIndex][i] != 0):
+                        self.grid[cardIndex][i] = 0
+                        changedSomething = True
+                return changedSomething
+        
+        # Sum probabilities
+        sumOfProbabilities = 0
+        for playerIndex in range(numPlayers + 1):
+            value = self.grid[cardIndex][playerIndex]
+            sumOfProbabilities = sumOfProbabilities + value
+        
+        # Check for invalid condition
+        if sumOfProbabilities == 0:
+            print("Error: Zero probability for %s" % (clueUtils.allCards[cardIndex]))
+            return changedSomething
+            
+        # Update probabilities so all nonzero probabilities add up to one
+        for playerIndex in range(numPlayers + 1):
+            value = self.grid[cardIndex][playerIndex]
+            newValue = value/sumOfProbabilities
+            if ((newValue - value) >= 0.0001):
+                self.grid[cardIndex][playerIndex] = newValue
+                changedSomething = True
+        return changedSomething
+    
+    def updateCardProbabilities(self):
+        loopCount = 0
+        while True:
+            loopCount = loopCount + 1
+            changedCount = 0
+            for cardIndex in range(clueUtils.numCards):
+                changedSomething = self.updateCardProbability(cardIndex)
+                if changedSomething == True:
+                    changedCount = changedCount + 1
+            if changedCount == 0:
+                break
+            if loopCount >= 100:
+                break
+        return loopCount
+                        
     def display(self):
         for i in range(len(self.grid)):
             for j in range(len(self.grid[0])):
                 print("%8.2f" % (self.grid[i][j]), end='')
                 
             print("\n")
+            
+    def displayPretty(self):
+        print("Suspects:")
+        for i in range(numSuspects):
+            for j in range(len(self.grid[0])):
+                print("%8.2f" % (self.grid[i][j]), end='')
+                
+            print("\t%s\n" % (clueUtils.suspects[i]))
+        print("Weapons:")
+        for i in range(numWeapons):
+            for j in range(len(self.grid[0])):
+                print("%8.2f" % (self.grid[i][j]), end='')
+                
+            print("\t%s\n" % (clueUtils.weapons[i]))
+        print("Rooms:")
+        for i in range(numRooms):
+            for j in range(len(self.grid[0])):
+                print("%8.2f" % (self.grid[i][j]), end='')
+                
+            print("\t%s\n" % (clueUtils.rooms[i]))
 
 #Test code
 if __name__ == "__main__":
     myTestGrid = clueGrid()
     myTestGrid.display()
     myTestGrid.readGuessLog()
+    loopCount = myTestGrid.updateCardProbabilities()
+    print("Loop Count: %d" % (loopCount))
     myTestGrid.display()
 #   print(clueUtils.numPlayerCards)
