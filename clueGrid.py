@@ -161,6 +161,9 @@ class clueGrid:
             if loopCount >= 100:
                 break
             self.ifAllPlayerCardsKnownPlayerDoesNotHaveAnyOtherCards()
+            self.ifSuspectKnownElimateAllOtherCandidates()
+            self.ifWeaponKnownElimateAllOtherCandidates()
+            self.ifRoomKnownElimateAllOtherCandidates()
         return loopCount
     
     def knownPlayerCards(self, playerName):
@@ -179,7 +182,37 @@ class clueGrid:
                     cardIndex = allCards.index(card)
                     if self.grid[cardIndex][playerIndex] != 1:
                         self.grid[cardIndex][playerIndex] = 0
-        
+    
+    def ifSuspectKnownElimateAllOtherCandidates(self):
+        candidateSuspects = self.suspectCandidates()
+        for card in candidateSuspects:
+            cardIndex = allCards.index(card)
+            if self.grid[cardIndex][mysteryIndex] == 1:
+                for cardToZero in candidateSuspects:
+                    if card != cardToZero:
+                        cardToZeroIndex = allCards.index(cardToZero)
+                        self.grid[cardToZeroIndex][mysteryIndex] = 0
+    
+    def ifWeaponKnownElimateAllOtherCandidates(self):
+        candidateWeapons = self.weaponCandidates()
+        for card in candidateWeapons:
+            cardIndex = allCards.index(card)
+            if self.grid[cardIndex][mysteryIndex] == 1:
+                for cardToZero in candidateWeapons:
+                    if card != cardToZero:
+                        cardToZeroIndex = allCards.index(cardToZero)
+                        self.grid[cardToZeroIndex][mysteryIndex] = 0
+    
+    def ifRoomKnownElimateAllOtherCandidates(self):
+        candidateRooms = self.roomCandidates()
+        for card in candidateRooms:
+            cardIndex = allCards.index(card)
+            if self.grid[cardIndex][mysteryIndex] == 1:
+                for cardToZero in candidateRooms:
+                    if card != cardToZero:
+                        cardToZeroIndex = allCards.index(cardToZero)
+                        self.grid[cardToZeroIndex][mysteryIndex] = 0
+    
     def display(self):
         for i in range(len(self.grid)):
             for j in range(len(self.grid[0])):
