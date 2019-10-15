@@ -84,13 +84,3 @@ while cardIndex < 18:
         numPlayerCards[playerIndex] = numPlayerCards[playerIndex] + 1
         cardIndex = cardIndex + 1
         playerIndex = playerIndex + 1
-
-#empty guessLog.csv file
-file = open("public/guessLog.csv", 'w')
-file.close()
-
-#write header to guessLog.csv file
-guessLogHeader = ["Suspect", "Weapon", "Room"]
-for playerName in playerNames:
-    guessLogHeader.append(playerName)
-appendRowToFile("public/guessLog.csv", guessLogHeader)

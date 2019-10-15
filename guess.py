@@ -29,7 +29,7 @@ class guess:
     def appendToGuessLog(self):
         guessList = [self.suspect, self.weapon, self.room]
         guessList = guessList + self.results
-        print(guessList) #for debugging
+#       print(guessList) #for debugging
         clueUtils.appendRowToFile("public/guessLog.csv", guessList)
         
     def display(self):

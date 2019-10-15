@@ -9,7 +9,7 @@ class cluePlayer:
         self.name = name
         self.cards = cards
         self.playerType = playerType
-        self.grid = clueGrid.clueGrid()
+        self.myGrid = clueGrid.clueGrid()
         
         f = open("private/%s_saw.csv" % (self.name), 'a')
         for card in cards:
@@ -22,7 +22,7 @@ class cluePlayer:
         print("Cards: %s\n" % (self.cards))
     
     def revealToHuman(self, theGuess):
-        print("%s: I, %s, have %s" % (theGuess.name, self.name, theGuess.revealed)) 
+        print("%s: I, %s, have %s" % (theGuess.playerName, self.name, theGuess.revealed)) 
         
     def revealToRandom(self, theGuess):
         f = open("private/%s_saw.csv" % (theGuess.playerName), 'a')
@@ -103,15 +103,45 @@ class cluePlayer:
         random_guess.display()
         return random_guess
     
+    def generateSmartGuess(self):
+        likelySuspects = self.myGrid.suspectCandidates()
+        likelyWeapons = self.myGrid.weaponCandidates()
+        likelyRooms = self.myGrid.roomCandidates()
+        
+#         print(likelySuspects)
+#         print(likelyWeapons)
+#         print(likelyRooms)
+        
+        guessSuspect = random.sample(likelySuspects, 1)[0]
+        guessWeapon = random.sample(likelyWeapons, 1)[0]
+        guessRoom = random.sample(likelyRooms, 1)[0]
+        
+        smartGuess = guess.guess(self.name, guessSuspect, guessWeapon, guessRoom)
+        smartGuess.display()
+        return smartGuess
+    
     def playerGuess(self):
         if self.playerType == "human":
             theGuess = self.requestUserToGuess()
             return theGuess
         if self.playerType == "random":
-            theGuess = self.generateRandomGuess()
+            theGuess = self.generateSmartGuess()
             return theGuess
         print("Invalid player type")
-        
+    
+    def makeAccusationIfKnown(self):
+        self.updateLogic()
+        if (self.myGrid.numCandidates() == 3):
+            theSuspect = self.myGrid.suspectCandidates()[0]
+            theWeapon = self.myGrid.weaponCandidates()[0]
+            theRoom = self.myGrid.roomCandidates()[0]
+            print("%s: My accusation is %s with the %s in the %s" % (self.name, theSuspect, theWeapon, theRoom))
+    
+    def updateLogic(self):
+        self.myGrid.readGuessLog()
+        self.myGrid.readPrivateLog("private/%s_saw.csv" % (self.name))
+        self.myGrid.updateCardProbabilities()
+    
 #Test code
 if __name__ == "__main__":
     cluePlayers = []
@@ -123,11 +153,18 @@ if __name__ == "__main__":
         player = cluePlayer(clueUtils.playerNames[playerIndex], playerCards, clueUtils.playerTypes[playerIndex])
         cluePlayers.append(player)
     
-    testPlayer = cluePlayers[0]
-    print("Initial Grid")
-    testPlayer.grid.displayPretty()
-    testPlayer.grid.readGuessLog()
-    testPlayer.grid.readPrivateLog("private/%s_saw.csv" % (testPlayer.name))
-    testPlayer.grid.updateCardProbabilities()
-    print("Final Grid")
-    testPlayer.grid.displayPretty()
+    cluePlayers[0].myGrid.readGuessLog()
+    cluePlayers[0].myGrid.readPrivateLog("private/%s_saw.csv" % (cluePlayers[0].name))
+    cluePlayers[0].myGrid.updateCardProbabilities()
+
+    cluePlayers[1].myGrid.readGuessLog()
+    cluePlayers[1].myGrid.readPrivateLog("private/%s_saw.csv" % (cluePlayers[1].name))
+    cluePlayers[1].myGrid.updateCardProbabilities()
+    
+    print("Player 1")
+    cluePlayers[0].myGrid.displayPretty()
+    
+    print("Player 2")
+    cluePlayers[1].myGrid.displayPretty()
+
+#   print("%d" % (cluePlayers[1].myGrid.grid[8][6])) # Revolver, should be 0.00

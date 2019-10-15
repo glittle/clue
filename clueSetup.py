@@ -57,6 +57,6 @@ file.close()
 guessLogHeader = ["Suspect", "Weapon", "Room"]
 for playerName in playerNames:
     guessLogHeader.append(playerName)
-appendRowToFile("public/guessLog.csv", guessLogHeader)
+clueUtils.appendRowToFile("public/guessLog.csv", guessLogHeader)
 
 print("Cards written to files")

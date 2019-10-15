@@ -33,6 +33,7 @@ while True:
     
     playerWhoGuessedIndex = clueUtils.playerNames.index(userInput)
     theGuess = cluePlayers[playerWhoGuessedIndex].playerGuess()
+    cluePlayers[playerWhoGuessedIndex].makeAccusationIfKnown()
     playerIndex = playerWhoGuessedIndex + 1
     for i in range(clueUtils.numPlayers):
         if playerIndex >= clueUtils.numPlayers:

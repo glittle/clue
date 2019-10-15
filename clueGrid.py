@@ -3,12 +3,22 @@ import csv
 import clueUtils
 import guess
 
+suspects = clueUtils.suspects
+weapons = clueUtils.weapons
+rooms = clueUtils.rooms
+allCards = clueUtils.allCards
+
+playerNames = clueUtils.playerNames
+
 numPlayers = clueUtils.numPlayers
 numSuspects = clueUtils.numSuspects
 numWeapons = clueUtils.numWeapons
 numRooms = clueUtils.numRooms
 numCards = clueUtils.numCards
 numPlayerCards = clueUtils.numPlayerCards
+mysteryIndex = numPlayers
+
+epsilon = 0.0001
 
 class clueGrid:
     def __init__(self):
@@ -33,6 +43,14 @@ class clueGrid:
             roomRow.append(1/numRooms)
             self.grid.append(roomRow)
     
+    def at(self, card, playerName):
+        cardIndex = clueUtils.allCards.index(card)
+        if playerName == "mystery":
+            playerIndex = mysteryIndex
+        else:
+            playerIndex = clueUtils.playerNames.index(playerName)
+        return self.grid[cardIndex][playerIndex]
+    
     def show(self, playerName, card):
         cardIndex = clueUtils.allCards.index(card)
         playerIndex = clueUtils.playerNames.index(playerName)
@@ -54,7 +72,7 @@ class clueGrid:
                     #do nothing
                     header = False
                 else:
-                    print(row)
+                    #print(row)
                     self.processGuessLogRow(row)
     
     def readPrivateLog(self, filename):
@@ -142,8 +160,26 @@ class clueGrid:
                 break
             if loopCount >= 100:
                 break
+            self.ifAllPlayerCardsKnownPlayerDoesNotHaveAnyOtherCards()
         return loopCount
-                        
+    
+    def knownPlayerCards(self, playerName):
+        knownHand = []
+        for card in allCards:
+            if self.at(card, playerName) == 1:
+                knownHand.append(card)
+        return knownHand
+    
+    def ifAllPlayerCardsKnownPlayerDoesNotHaveAnyOtherCards(self):
+        for playerName in playerNames:
+            playerIndex = playerNames.index(playerName)
+            knownCardsInPlayerHand = self.knownPlayerCards(playerName)
+            if len(knownCardsInPlayerHand) == numPlayerCards[playerIndex]:
+                for card in allCards:
+                    cardIndex = allCards.index(card)
+                    if self.grid[cardIndex][playerIndex] != 1:
+                        self.grid[cardIndex][playerIndex] = 0
+        
     def display(self):
         for i in range(len(self.grid)):
             for j in range(len(self.grid[0])):
@@ -152,24 +188,93 @@ class clueGrid:
             print("\n")
             
     def displayPretty(self):
-        print("Suspects:")
-        for i in range(numSuspects):
-            for j in range(len(self.grid[0])):
-                print("%8.2f" % (self.grid[i][j]), end='')
+        print("Suspects: %d candidate(s) %s" % (self.numSuspectCandidates(), self.suspectCandidates()))
+        for card in suspects:
+            for playerName in clueUtils.playerNames:
+                print("%8.2f" % (self.at(card, playerName)), end='')
                 
-            print("\t%s\n" % (clueUtils.suspects[i]))
-        print("Weapons:")
-        for i in range(numWeapons):
-            for j in range(len(self.grid[0])):
-                print("%8.2f" % (self.grid[i][j]), end='')
+            print("%8.2f\t%s\n" % (self.at(card, "mystery"), card))
+        
+        print("Weapons: %d candidate(s) %s" % (self.numWeaponCandidates(), self.weaponCandidates()))
+        for card in weapons:
+            for playerName in clueUtils.playerNames:
+                print("%8.2f" % (self.at(card, playerName)), end='')
                 
-            print("\t%s\n" % (clueUtils.weapons[i]))
-        print("Rooms:")
-        for i in range(numRooms):
-            for j in range(len(self.grid[0])):
-                print("%8.2f" % (self.grid[i][j]), end='')
+            print("%8.2f\t%s\n" % (self.at(card, "mystery"), card))
+        
+        print("Rooms: %d candidate(s) %s" % (self.numRoomCandidates(), self.roomCandidates()))
+        for card in rooms:
+            for playerName in clueUtils.playerNames:
+                print("%8.2f" % (self.at(card, playerName)), end='')
                 
-            print("\t%s\n" % (clueUtils.rooms[i]))
+            print("%8.2f\t%s\n" % (self.at(card, "mystery"), card))
+    
+    def suspectCandidates(self):
+        candidates = []
+        for card in clueUtils.suspects:
+            cardIndex = clueUtils.allCards.index(card)
+            if (self.grid[cardIndex][mysteryIndex] >= epsilon):
+                candidates.append(card)
+            
+        return candidates
+    
+    def weaponCandidates(self):
+        candidates = []
+        for card in clueUtils.weapons:
+            cardIndex = clueUtils.allCards.index(card)
+            if (self.grid[cardIndex][mysteryIndex] >= epsilon):
+                candidates.append(card)
+        
+        return candidates
+    
+    def roomCandidates(self):
+        candidates = []
+        for card in clueUtils.rooms:
+            cardIndex = clueUtils.allCards.index(card)
+            if (self.grid[cardIndex][mysteryIndex] >= epsilon):
+                candidates.append(card)
+            
+        return candidates
+    
+    def numCandidates(self):
+        numCandidates = 0
+        for card in allCards:
+            cardIndex = allCards.index(card)
+            if (self.grid[cardIndex][mysteryIndex] >= epsilon):
+                numCandidates = numCandidates + 1
+            
+        return numCandidates
+    
+    def numSuspectCandidates(self):
+        numCandidates = 0
+        for card in clueUtils.suspects:
+            cardIndex = clueUtils.allCards.index(card)
+            if (self.grid[cardIndex][mysteryIndex] >= epsilon):
+                numCandidates = numCandidates + 1
+            
+        return numCandidates
+    
+    def numWeaponCandidates(self):
+        numCandidates = 0
+        for card in clueUtils.weapons:
+            cardIndex = clueUtils.allCards.index(card)
+            if (self.grid[cardIndex][mysteryIndex] >= epsilon):
+                numCandidates = numCandidates + 1
+                
+        return numCandidates
+    
+    def numRoomCandidates(self):
+        numCandidates = 0
+        for card in clueUtils.rooms:
+            cardIndex = clueUtils.allCards.index(card)
+            if (self.grid[cardIndex][mysteryIndex] >= epsilon):
+                numCandidates = numCandidates + 1
+            
+        return numCandidates
+    
+    def displayCandidates(self):
+        for card in allCards:
+            print("%8.2f %s\n" % (self.at(card,"mystery"), card))
 
 #Test code
 if __name__ == "__main__":
@@ -178,5 +283,5 @@ if __name__ == "__main__":
     myTestGrid.readGuessLog()
     loopCount = myTestGrid.updateCardProbabilities()
     print("Loop Count: %d" % (loopCount))
-    myTestGrid.display()
+    myTestGrid.displayPretty()
 #   print(clueUtils.numPlayerCards)
