@@ -150,20 +150,23 @@ class clueGrid:
     def updateCardProbabilities(self):
         loopCount = 0
         while True:
+            changeCount = 0
             loopCount = loopCount + 1
-            changedCount = 0
+            
+            changeCount = changeCount + self.ifAllPlayerCardsKnownPlayerDoesNotHaveAnyOtherCards()
+            changeCount = changeCount + self.ifSuspectKnownElimateAllOtherCandidates()
+            changeCount = changeCount + self.ifWeaponKnownElimateAllOtherCandidates()
+            changeCount = changeCount + self.ifRoomKnownElimateAllOtherCandidates()
+            
             for cardIndex in range(clueUtils.numCards):
                 changedSomething = self.updateCardProbability(cardIndex)
                 if changedSomething == True:
-                    changedCount = changedCount + 1
-            if changedCount == 0:
+                    changeCount = changeCount + 1
+
+            if changeCount == 0:
                 break
             if loopCount >= 100:
                 break
-            self.ifAllPlayerCardsKnownPlayerDoesNotHaveAnyOtherCards()
-            self.ifSuspectKnownElimateAllOtherCandidates()
-            self.ifWeaponKnownElimateAllOtherCandidates()
-            self.ifRoomKnownElimateAllOtherCandidates()
         return loopCount
     
     def knownPlayerCards(self, playerName):
@@ -174,44 +177,59 @@ class clueGrid:
         return knownHand
     
     def ifAllPlayerCardsKnownPlayerDoesNotHaveAnyOtherCards(self):
+        changeCount = 0
         for playerName in playerNames:
             playerIndex = playerNames.index(playerName)
             knownCardsInPlayerHand = self.knownPlayerCards(playerName)
             if len(knownCardsInPlayerHand) == numPlayerCards[playerIndex]:
                 for card in allCards:
                     cardIndex = allCards.index(card)
-                    if self.grid[cardIndex][playerIndex] != 1:
+                    if (self.grid[cardIndex][playerIndex] != 1) and (self.grid[cardIndex][playerIndex] != 0):
                         self.grid[cardIndex][playerIndex] = 0
+                        changeCount = changeCount + 1
+        return changeCount
     
     def ifSuspectKnownElimateAllOtherCandidates(self):
+        changeCount = 0
         candidateSuspects = self.suspectCandidates()
         for card in candidateSuspects:
             cardIndex = allCards.index(card)
             if self.grid[cardIndex][mysteryIndex] == 1:
                 for cardToZero in candidateSuspects:
-                    if card != cardToZero:
+                    if cardToZero != card:
                         cardToZeroIndex = allCards.index(cardToZero)
-                        self.grid[cardToZeroIndex][mysteryIndex] = 0
+                        if (self.grid[cardToZeroIndex][mysteryIndex] != 0):
+                            self.grid[cardToZeroIndex][mysteryIndex] = 0
+                            changeCount = changeCount + 1
+        return changeCount
     
     def ifWeaponKnownElimateAllOtherCandidates(self):
+        changeCount = 0
         candidateWeapons = self.weaponCandidates()
         for card in candidateWeapons:
             cardIndex = allCards.index(card)
             if self.grid[cardIndex][mysteryIndex] == 1:
                 for cardToZero in candidateWeapons:
-                    if card != cardToZero:
+                    if cardToZero != card:
                         cardToZeroIndex = allCards.index(cardToZero)
-                        self.grid[cardToZeroIndex][mysteryIndex] = 0
+                        if (self.grid[cardToZeroIndex][mysteryIndex] != 0):
+                            self.grid[cardToZeroIndex][mysteryIndex] = 0
+                            changeCount = changeCount + 1
+        return changeCount
     
     def ifRoomKnownElimateAllOtherCandidates(self):
+        changeCount = 0
         candidateRooms = self.roomCandidates()
         for card in candidateRooms:
             cardIndex = allCards.index(card)
             if self.grid[cardIndex][mysteryIndex] == 1:
                 for cardToZero in candidateRooms:
-                    if card != cardToZero:
+                    if cardToZero != card:
                         cardToZeroIndex = allCards.index(cardToZero)
-                        self.grid[cardToZeroIndex][mysteryIndex] = 0
+                        if (self.grid[cardToZeroIndex][mysteryIndex] != 0):
+                            self.grid[cardToZeroIndex][mysteryIndex] = 0
+                            changeCount = changeCount + 1
+        return changeCount
     
     def display(self):
         for i in range(len(self.grid)):

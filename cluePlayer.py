@@ -104,13 +104,11 @@ class cluePlayer:
         return random_guess
     
     def generateSmartGuess(self):
+        self.updateLogic()
+        
         likelySuspects = self.myGrid.suspectCandidates()
         likelyWeapons = self.myGrid.weaponCandidates()
         likelyRooms = self.myGrid.roomCandidates()
-        
-#         print(likelySuspects)
-#         print(likelyWeapons)
-#         print(likelyRooms)
         
         guessSuspect = random.sample(likelySuspects, 1)[0]
         guessWeapon = random.sample(likelyWeapons, 1)[0]
